@@ -1,0 +1,202 @@
+[
+  {
+    "sku": "167V 01 015 0 01",
+    "description_en": "Front bumper left",
+    "description_de": "Frontstoßstange links",
+    "description_2": "V/C167",
+    "model": "AMG EP",
+    "main_image": "images/Hauptbilder/167V 01 015 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 015 0 01.jpg",
+    "group": "V/C167 - AMG EP"
+  },
+  {
+    "sku": "167V 01 016 0 01",
+    "description_en": "Front bumper right",
+    "description_de": "Frontstoßstange rechts",
+    "description_2": "V/C167",
+    "model": "AMG EP",
+    "main_image": "images/Hauptbilder/167V 01 015 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 016 0 01.jpg",
+    "group": "V/C167 - AMG EP"
+  },
+  {
+    "sku": "167V 01 017 0 01",
+    "description_en": "Headlight left",
+    "description_de": "Scheinwerfer links",
+    "description_2": "V/C167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167V 01 017 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 017 0 01.jpg",
+    "group": "V/C167 - all"
+  },
+  {
+    "sku": "167V 01 018 0 01",
+    "description_en": "Headlight right",
+    "description_de": "Scheinwerfer rechts",
+    "description_2": "V/C167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167V 01 017 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 018 0 01.jpg",
+    "group": "V/C167 - all"
+  },
+  {
+    "sku": "167V 01 019 0 04",
+    "description_en": "Rear light side panel left",
+    "description_de": "Rücklicht-Seitenverkleidung links",
+    "description_2": "V167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167V 01 019 0 04.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 019 0 04.jpg",
+    "group": "V167 - all"
+  },
+  {
+    "sku": "167V 01 020 0 04",
+    "description_en": "Rear light side panel right",
+    "description_de": "Rücklicht-Seitenverkleidung rechts",
+    "description_2": "V167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167V 01 019 0 04.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 020 0 04.jpg",
+    "group": "V167 - all"
+  },
+  {
+    "sku": "167C 01 021 0 04",
+    "description_en": "Rear light side panel left",
+    "description_de": "Rücklicht-Seitenverkleidung links",
+    "description_2": "C167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167C 01 021 0 04.jpg",
+    "secondary_image": "images/Nebenbilder/U167C 01 021 0 04.jpg",
+    "group": "C167 - all"
+  },
+  {
+    "sku": "167C 01 022 0 04",
+    "description_en": "Rear light side panel right",
+    "description_de": "Rücklicht-Seitenverkleidung rechts",
+    "description_2": "C167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167C 01 021 0 04.jpg",
+    "secondary_image": "images/Nebenbilder/U167C 01 022 0 04.jpg",
+    "group": "C167 - all"
+  },
+  {
+    "sku": "167V 01 021 0 01",
+    "description_en": "Front bumper left",
+    "description_de": "Frontstoßstange links",
+    "description_2": "V167",
+    "model": "AMG P",
+    "main_image": "images/Hauptbilder/167V 01 021 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 021 0 01.jpg",
+    "group": "V167 - AMG P"
+  },
+  {
+    "sku": "167V 01 022 0 01",
+    "description_en": "Front bumper right",
+    "description_de": "Frontstoßstange rechts",
+    "description_2": "V167",
+    "model": "AMG P",
+    "main_image": "images/Hauptbilder/167V 01 021 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 01 022 0 01.jpg",
+    "group": "V167 - AMG P"
+  },
+  {
+    "sku": "167V 02 023 0 01",
+    "description_en": "Radiator grill framing",
+    "description_de": "Kühlergrill-Rahmen",
+    "description_2": "V167",
+    "model": "AMG EP",
+    "main_image": "images/Hauptbilder/167V 02 023 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 02 023 0 01.jpg",
+    "group": "V167 - AMG EP"
+  },
+  {
+    "sku": "167V 02 011 0 00",
+    "description_en": "Light stripe front",
+    "description_de": "Lichtleiste vorne",
+    "description_2": "V167",
+    "model": "AMG EP",
+    "main_image": "images/Hauptbilder/167V 02 011 0 00.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 02 011 0 00.jpg",
+    "group": "V167 - AMG EP"
+  },
+  {
+    "sku": "167V 02 012 0 00",
+    "description_en": "Exterior mirror left",
+    "description_de": "Außenspiegel links",
+    "description_2": "V167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167V 02 012 0 00.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 02 012 0 00.jpg",
+    "group": "V167 - all"
+  },
+  {
+    "sku": "167V 02 013 0 00",
+    "description_en": "Exterior mirror right",
+    "description_de": "Außenspiegel rechts",
+    "description_2": "V167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167V 02 012 0 00.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 02 013 0 00.jpg",
+    "group": "V167 - all"
+  },
+  {
+    "sku": "0000 02 001 0 00",
+    "description_en": "MB-star oval",
+    "description_de": "MB-Stern oval",
+    "description_2": "",
+    "model": "all",
+    "main_image": "images/Hauptbilder/0000 02 001 0 00.jpg",
+    "secondary_image": "images/Nebenbilder/U0000 02 001 0 00.jpg",
+    "group": "all - all"
+  },
+  {
+    "sku": "167V 02 020 0 00",
+    "description_en": "Light stripe rear",
+    "description_de": "Lichtleiste hinten",
+    "description_2": "V167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167V 02 020 0 00.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 02 020 0 00.jpg",
+    "group": "V167 - all"
+  },
+  {
+    "sku": "167C 02 021 0 00",
+    "description_en": "Light stripe rear left",
+    "description_de": "Lichtleiste hinten links",
+    "description_2": "C167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167C 02 021 0 00.jpg",
+    "secondary_image": "images/Nebenbilder/U167C 02 021 0 00.jpg",
+    "group": "C167 - all"
+  },
+  {
+    "sku": "167C 02 022 0 00",
+    "description_en": "Light stripe rear right",
+    "description_de": "Lichtleiste hinten rechts",
+    "description_2": "C167",
+    "model": "all",
+    "main_image": "images/Hauptbilder/167C 02 021 0 00.jpg",
+    "secondary_image": "images/Nebenbilder/U167C 02 022 0 00.jpg",
+    "group": "C167 - all"
+  },
+  {
+    "sku": "167V 02 021 0 01",
+    "description_en": "Front bumper, bottom",
+    "description_de": "Frontstoßstange, unten",
+    "description_2": "V167",
+    "model": "AMG P",
+    "main_image": "images/Hauptbilder/167V 02 021 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 02 021 0 01.jpg",
+    "group": "V167 - AMG P"
+  },
+  {
+    "sku": "167V 02 022 0 01",
+    "description_en": "Radiator grill framing",
+    "description_de": "Kühlergrill-Rahmen",
+    "description_2": "V167",
+    "model": "AMG P",
+    "main_image": "images/Hauptbilder/167V 02 022 0 01.jpg",
+    "secondary_image": "images/Nebenbilder/U167V 02 022 0 01.jpg",
+    "group": "V167 - AMG P"
+  }
+]
