@@ -225,6 +225,24 @@
   pre.cmd code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); line-height: 1.7; white-space: pre; display:block; }
   pre.cmd .c { color: var(--ink-3); } pre.cmd .g { color: var(--nv-ink); }
 
+  /* storage strip */
+  .stor { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 680px){ .stor { grid-template-columns: 1fr; } }
+  .schip {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 15px;
+    box-shadow: var(--shadow); display:flex; flex-direction:column; gap:6px; position:relative;
+  }
+  .schip .st-h { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .schip .st-name { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing:.02em; }
+  .schip .st-qty { font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+  .schip .st-if { font-size: 12px; color: var(--ink-2); }
+  .schip .st-use { font-size: 11.5px; margin-top:2px; padding: 5px 9px; border-radius: 7px; font-family: var(--mono); letter-spacing:.02em; }
+  .schip.pick { border-color: color-mix(in srgb, var(--nv) 55%, var(--line)); }
+  .schip.pick .st-use { background: color-mix(in srgb, var(--nv) 16%, transparent); color: var(--nv-ink); }
+  .schip .st-use.neutral { background: var(--panel-2); color: var(--ink-3); }
+  .schip .badge-pick { position:absolute; top:-8px; right:12px; background: var(--nv); color:#0c1400; font-family:var(--mono);
+    font-size:9px; font-weight:700; letter-spacing:.06em; padding:2px 8px; border-radius: 20px; }
+
   footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line);
     font-family: var(--mono); font-size: 11px; color: var(--ink-3); display:flex; flex-wrap:wrap; gap: 6px 16px; justify-content: space-between; }
 </style>
@@ -304,6 +322,27 @@
   </div>
   <p class="flow-note" style="color:var(--ink-3)">⚠ O mapa slot→CPU acima é o típico dessa família de placas; <b style="color:var(--ink-2)">confirme no manual da sua placa exatamente qual slot pertence a cada CPU</b> antes de mover a GPU — a numeração dos slots pode variar.</p>
 
+  <p class="sec-label">Armazenamento na placa · onde colocar os pesos dos modelos</p>
+  <div class="stor">
+    <div class="schip pick">
+      <span class="badge-pick">USAR P/ MODELOS</span>
+      <div class="st-h"><span class="st-name">M.2</span><span class="st-qty">1 slot</span></div>
+      <span class="st-if">Combo — aceita <b>NVMe (PCIe x4)</b> ou SATA</span>
+      <span class="st-use">→ pool NVMe p/ pesos do CT-AI (carga rápida de 20 GB+)</span>
+    </div>
+    <div class="schip pick">
+      <div class="st-h"><span class="st-name">OCuLink ×4</span><span class="st-qty">conect. 0–3</span></div>
+      <span class="st-if">PCIe x4 cada → <b>NVMe U.2</b> (SSD 2,5")</span>
+      <span class="st-use">→ alternativa NVMe de maior capacidade</span>
+    </div>
+    <div class="schip">
+      <div class="st-h"><span class="st-name">SATA / sSATA</span><span class="st-qty">8 + 4 portas</span></div>
+      <span class="st-if">SATA 0-3 / 4-7 + sSATA1/2/4/5 (PCH)</span>
+      <span class="st-use neutral">→ boot / dados frios · não p/ pesos (lento)</span>
+    </div>
+  </div>
+  <p class="flow-note" style="color:var(--ink-3)">Nota: M.2, OCuLink e sSATA saem do <b style="color:var(--ink-2)">PCH, que pende da CPU 1</b> — então o armazenamento NVMe funciona mesmo com a CPU 2 vazia (diferente do slot da P40). Confirme o roteamento do OCuLink no manual se for usá-lo.</p>
+
   <p class="sec-label">Causas em ordem de probabilidade</p>
   <div class="cards">
     <div class="card crit">
@@ -346,6 +385,7 @@
         <dt>GPU</dt><dd>NVIDIA Tesla P40 24 GB (passiva)</dd>
         <dt>Montagem</dt><dd>lateral esquerda do chassi</dd>
         <dt>RAM</dt><dd>32 GB (2 DIMMs na CPU 1)</dd>
+        <dt>Storage</dt><dd>M.2 NVMe/SATA · OCuLink ×4 (U.2) · SATA ×8 + sSATA ×4</dd>
         <dt>Resfr.</dt><dd>passivo — depende do fluxo de ar do chassi</dd>
       </dl>
     </div>
