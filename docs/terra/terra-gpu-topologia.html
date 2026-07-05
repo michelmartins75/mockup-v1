@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terra — Montagem da GPU P40 e diagnóstico</title>
+</head>
+<body>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #eef1ef;
+    --panel: #ffffff;
+    --panel-2: #f6f8f6;
+    --board: #d9e2dc;
+    --board-line: #b9c8be;
+    --ink: #16211c;
+    --ink-2: #4a5a52;
+    --ink-3: #7c8a82;
+    --line: #d3dbd6;
+    --nv: #6aa800;
+    --nv-ink: #3f6600;
+    --crit: #d33c41;
+    --crit-bg: #fbe9e9;
+    --warn: #b57d00;
+    --warn-bg: #fcf1d9;
+    --ok: #1f8a70;
+    --ok-bg: #e2f2ec;
+    --dead: #9aa6a0;
+    --shadow: 0 1px 2px rgba(20,40,30,.06), 0 8px 24px rgba(20,40,30,.06);
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1411;
+      --panel: #141d18;
+      --panel-2: #101813;
+      --board: #16241c;
+      --board-line: #26382d;
+      --ink: #e6efe9;
+      --ink-2: #a3b3aa;
+      --ink-3: #6f8177;
+      --line: #223029;
+      --nv: #86c923;
+      --nv-ink: #a6dd4e;
+      --crit: #ff6b6f;
+      --crit-bg: #2a1516;
+      --warn: #e0a83a;
+      --warn-bg: #2a2110;
+      --ok: #43c7a5;
+      --ok-bg: #10241d;
+      --dead: #4a5850;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1ef; --panel: #ffffff; --panel-2: #f6f8f6; --board: #d9e2dc; --board-line: #b9c8be;
+    --ink: #16211c; --ink-2: #4a5a52; --ink-3: #7c8a82; --line: #d3dbd6;
+    --nv: #6aa800; --nv-ink: #3f6600; --crit: #d33c41; --crit-bg: #fbe9e9; --warn: #b57d00; --warn-bg: #fcf1d9;
+    --ok: #1f8a70; --ok-bg: #e2f2ec; --dead: #9aa6a0;
+    --shadow: 0 1px 2px rgba(20,40,30,.06), 0 8px 24px rgba(20,40,30,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1411; --panel: #141d18; --panel-2: #101813; --board: #16241c; --board-line: #26382d;
+    --ink: #e6efe9; --ink-2: #a3b3aa; --ink-3: #6f8177; --line: #223029;
+    --nv: #86c923; --nv-ink: #a6dd4e; --crit: #ff6b6f; --crit-bg: #2a1516; --warn: #e0a83a; --warn-bg: #2a2110;
+    --ok: #43c7a5; --ok-bg: #10241d; --dead: #4a5850;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 72px; }
+
+  /* Header */
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--nv-ink); display: flex; align-items: center; gap: 10px; margin: 0 0 14px;
+  }
+  .eyebrow::before {
+    content: ""; width: 26px; height: 2px; background: var(--nv); display: inline-block;
+  }
+  h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.08; margin: 0 0 12px; letter-spacing: -.02em; text-wrap: balance; }
+  h1 .light { color: var(--ink-3); font-weight: 400; }
+  .lede { font-size: 17px; color: var(--ink-2); max-width: 62ch; margin: 0; }
+  .verdict {
+    margin: 22px 0 0; padding: 14px 16px; border-radius: 12px;
+    background: var(--crit-bg); border: 1px solid color-mix(in srgb, var(--crit) 35%, transparent);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .verdict .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--crit); margin-top: 6px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--crit) 22%, transparent); }
+  .verdict b { color: var(--crit); }
+  .verdict p { margin: 0; font-size: 14.5px; color: var(--ink); }
+
+  /* Section chrome */
+  .sec-label {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-3); margin: 48px 0 16px; display: flex; align-items: center; gap: 12px;
+  }
+  .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* Board schematic */
+  .board {
+    background: var(--board);
+    border: 1px solid var(--board-line); border-radius: 16px; padding: 20px;
+    position: relative; box-shadow: var(--shadow);
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--board-line) 40%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--board-line) 40%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .board-top { display:flex; justify-content: space-between; align-items:center; margin-bottom: 16px; }
+  .board-top .name { font-family: var(--mono); font-size: 12px; color: var(--ink-2); letter-spacing:.04em; }
+  .board-top .rear { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); border:1px dashed var(--board-line); border-radius:6px; padding:3px 8px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 680px){ .grid { grid-template-columns: 1fr; } }
+
+  /* PCIe column */
+  .pcie { display: flex; flex-direction: column; gap: 8px; }
+  .pcie .col-h { font-family: var(--mono); font-size: 10px; letter-spacing:.1em; text-transform:uppercase; color: var(--ink-3); margin-bottom: 2px; }
+  .slot {
+    position: relative; border-radius: 8px; padding: 9px 10px; font-family: var(--mono); font-size: 11px;
+    border: 1px solid var(--line); background: var(--panel);
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .slot .sn { color: var(--ink); font-weight: 600; }
+  .slot .meta { color: var(--ink-3); font-size: 10px; }
+  .slot.cpu1 { border-left: 3px solid var(--ok); }
+  .slot.cpu2 { border-left: 3px solid var(--crit); background:
+     repeating-linear-gradient(135deg, transparent, transparent 7px, color-mix(in srgb, var(--crit) 8%, transparent) 7px, color-mix(in srgb, var(--crit) 8%, transparent) 9px), var(--panel); }
+  .slot .tag { position:absolute; top:8px; right:9px; font-size:9px; letter-spacing:.05em; }
+  .slot.cpu1 .tag { color: var(--ok); }
+  .slot.cpu2 .tag { color: var(--crit); }
+  .slot.gpu-here {
+    border: 1px solid var(--nv); box-shadow: 0 0 0 3px color-mix(in srgb, var(--nv) 22%, transparent);
+  }
+  .slot .gpu-badge {
+    margin-top:4px; align-self:flex-start; background: var(--nv); color:#0c1400; font-weight:700;
+    font-size:10px; padding:2px 7px; border-radius: 5px; letter-spacing:.03em;
+  }
+
+  /* CPU + DIMM zone */
+  .cpuzone { display:flex; flex-direction:column; gap: 14px; }
+  .cpu-row { display:grid; grid-template-columns: 1fr; gap: 8px; }
+  .socket {
+    border-radius: 12px; padding: 14px; border: 1px solid var(--line); background: var(--panel);
+    display:grid; grid-template-columns: 46px 1fr 46px; gap: 12px; align-items: stretch;
+  }
+  .dimms { display:flex; flex-direction: column; gap: 4px; justify-content:center; }
+  .dimm { height: 10px; border-radius: 2px; background: color-mix(in srgb, var(--ink-3) 22%, transparent); }
+  .dimm.on { background: #3a63b8; }
+  .socket .cpu {
+    border-radius: 8px; border: 1.5px solid var(--line); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:4px; padding: 14px 8px; min-height: 96px;
+  }
+  .cpu .lbl { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing:.04em; }
+  .cpu .sub { font-family: var(--mono); font-size: 10px; }
+  .cpu .pin {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); letter-spacing:.03em;
+  }
+  .socket.installed .cpu { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); background: var(--ok-bg); }
+  .socket.installed .cpu .lbl { color: var(--ink); }
+  .socket.installed .cpu .pin { background: var(--ok); color:#fff; }
+  .socket.empty .cpu {
+    border-style: dashed; border-color: color-mix(in srgb, var(--crit) 55%, var(--line)); background: var(--crit-bg);
+  }
+  .socket.empty .cpu .lbl { color: var(--crit); }
+  .socket.empty .cpu .sub { color: var(--crit); }
+  .socket.empty .cpu .pin { background: var(--crit); color:#fff; }
+  .socket .zone-tag { grid-column: 1/-1; font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); letter-spacing:.08em; text-transform:uppercase; }
+
+  .legend { display:flex; flex-wrap: wrap; gap: 14px 20px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--board-line); }
+  .legend span { font-family: var(--mono); font-size: 11px; color: var(--ink-2); display:flex; align-items:center; gap:7px; }
+  .legend i { width: 12px; height: 12px; border-radius: 3px; display:inline-block; flex:none; }
+  .lg-ok { background: var(--ok); } .lg-crit { background: var(--crit); }
+  .lg-gpu { background: var(--nv); } .lg-dimm{ background:#3a63b8; }
+
+  .flow-note { font-size: 13px; color: var(--ink-2); margin: 12px 2px 0; font-family: var(--mono); }
+  .flow-note b { color: var(--nv-ink); }
+
+  /* Diagnosis cards */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 680px){ .cards { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px;
+    box-shadow: var(--shadow); position: relative; overflow:hidden;
+  }
+  .card::before { content:""; position:absolute; left:0; top:0; bottom:0; width: 4px; background: var(--sev); }
+  .card.crit { --sev: var(--crit); } .card.warn { --sev: var(--warn); } .card.low { --sev: var(--ink-3); }
+  .card .sev {
+    font-family: var(--mono); font-size: 10px; letter-spacing:.12em; text-transform: uppercase;
+    color: var(--sev); display:flex; align-items:center; gap:8px; margin-bottom: 8px;
+  }
+  .card .sev .rank { background: var(--sev); color:#fff; border-radius: 5px; padding: 1px 7px; font-weight:700; }
+  .card h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: -.01em; }
+  .card p { margin: 0 0 10px; font-size: 13.5px; color: var(--ink-2); }
+  .card .fix { font-size: 13px; color: var(--ink); background: var(--panel-2); border:1px solid var(--line);
+    border-radius: 9px; padding: 9px 11px; display:flex; gap:8px; }
+  .card .fix b { color: var(--nv-ink); font-family: var(--mono); font-size: 11px; letter-spacing:.05em; text-transform:uppercase; flex:none; }
+
+  /* facts + commands two col */
+  .split { display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 680px){ .split { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .panel h3 { margin: 0 0 14px; font-size: 14px; letter-spacing:-.01em; }
+  dl.facts { margin:0; display:grid; grid-template-columns: auto 1fr; gap: 9px 14px; }
+  dl.facts dt { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing:.03em; white-space:nowrap; }
+  dl.facts dd { margin:0; font-size: 13px; color: var(--ink); }
+  dl.facts dd.bad { color: var(--crit); font-weight:600; }
+  dl.facts dd.good { color: var(--ok); font-weight:600; }
+
+  pre.cmd { margin: 0; background: var(--panel-2); border:1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; overflow-x: auto; }
+  pre.cmd code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); line-height: 1.7; white-space: pre; display:block; }
+  pre.cmd .c { color: var(--ink-3); } pre.cmd .g { color: var(--nv-ink); }
+
+  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; color: var(--ink-3); display:flex; flex-wrap:wrap; gap: 6px 16px; justify-content: space-between; }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Terra · Diagnóstico de hardware</p>
+  <h1>Como a Tesla P40 está montada no Terra <span class="light">— e por que o Proxmox não a enxerga</span></h1>
+  <p class="lede">Reconstrução da placa-mãe a partir das fotos do chassi e da etiqueta de serviço. A GPU está fisicamente instalada, mas some do <code>lspci</code>. A causa mais provável é topológica, não de driver.</p>
+
+  <div class="verdict">
+    <span class="dot"></span>
+    <p><b>Suspeita nº 1:</b> a placa é <b>dual-socket</b> e as linhas PCIe são divididas entre as duas CPUs. Só a <b>CPU 1</b> está instalada; o socket <b>CPU 2 (U2) está vazio</b> — confirmado na foto. Todo slot PCIe alimentado pela CPU 2 fica <b>eletricamente morto</b>: 0 dispositivos no barramento, exatamente o que o <code>lspci</code> mostra. Se a P40 está num desses slots, nenhum driver ou ajuste de BIOS vai resolver.</p>
+  </div>
+
+  <p class="sec-label">Esquema da placa (visto de cima)</p>
+  <div class="board">
+    <div class="board-top">
+      <span class="name">Intel dual-socket LGA3647 · família S2600WF · J50982-003 / HG1PL00020Q</span>
+      <span class="rear">I/O traseiro: NIC · VGA</span>
+    </div>
+
+    <div class="grid">
+      <!-- PCIe slots -->
+      <div class="pcie">
+        <div class="col-h">Slots PCIe 3.0</div>
+
+        <div class="slot cpu2 gpu-here">
+          <span class="tag">CPU2</span>
+          <span class="sn">Slot #4 · x16</span>
+          <span class="meta">linhas da CPU 2</span>
+          <span class="gpu-badge">◤ NVIDIA P40</span>
+        </div>
+        <div class="slot cpu2"><span class="tag">CPU2</span><span class="sn">Slot #6 · x16</span><span class="meta">linhas da CPU 2</span></div>
+        <div class="slot cpu2"><span class="tag">CPU2</span><span class="sn">Slot #5 · x8</span><span class="meta">linhas da CPU 2</span></div>
+        <div class="slot cpu1"><span class="tag">CPU1</span><span class="sn">Slot #2 · x16</span><span class="meta">linhas da CPU 1</span></div>
+        <div class="slot cpu1"><span class="tag">CPU1</span><span class="sn">Slot #1 · x8</span><span class="meta">linhas da CPU 1</span></div>
+        <div class="slot cpu1"><span class="tag">CPU1</span><span class="sn">Slot #3 · x8</span><span class="meta">linhas da CPU 1</span></div>
+      </div>
+
+      <!-- CPU + DIMM zone -->
+      <div class="cpuzone">
+        <div class="cpu-row">
+          <div class="socket empty">
+            <div class="dimms"><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i></div>
+            <div class="cpu">
+              <span class="lbl">CPU 2 · U2</span>
+              <span class="sub">socket vazio</span>
+              <span class="pin">✕ SEM CPU</span>
+            </div>
+            <div class="dimms"><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i></div>
+            <span class="zone-tag">↑ linhas PCIe desta CPU = mortas</span>
+          </div>
+        </div>
+
+        <div class="cpu-row">
+          <div class="socket installed">
+            <div class="dimms"><i class="dimm on"></i><i class="dimm on"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i></div>
+            <div class="cpu">
+              <span class="lbl">CPU 1</span>
+              <span class="sub">Xeon Silver 4215R</span>
+              <span class="pin">✓ INSTALADA</span>
+            </div>
+            <div class="dimms"><i class="dimm on"></i><i class="dimm on"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i><i class="dimm"></i></div>
+            <span class="zone-tag">↑ 32 GB · linhas PCIe desta CPU = ativas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i class="lg-ok"></i> Slot ativo (CPU 1 instalada)</span>
+      <span><i class="lg-crit"></i> Slot morto (CPU 2 ausente)</span>
+      <span><i class="lg-gpu"></i> Posição atual da P40</span>
+      <span><i class="lg-dimm"></i> DIMM populado</span>
+    </div>
+    <p class="flow-note">Fix mais rápido: <b>mover a P40 para um slot da CPU 1</b> (borda verde) → volta a aparecer no barramento sem trocar nada de software.</p>
+  </div>
+  <p class="flow-note" style="color:var(--ink-3)">⚠ O mapa slot→CPU acima é o típico dessa família de placas; <b style="color:var(--ink-2)">confirme no manual da sua placa exatamente qual slot pertence a cada CPU</b> antes de mover a GPU — a numeração dos slots pode variar.</p>
+
+  <p class="sec-label">Causas em ordem de probabilidade</p>
+  <div class="cards">
+    <div class="card crit">
+      <div class="sev"><span class="rank">1</span> Crítico · bate com o sintoma</div>
+      <h3>Slot da GPU alimentado pela CPU 2 (vazia)</h3>
+      <p>Em placa dual-socket, cada CPU dona de metade das linhas PCIe. Sem a CPU 2, seus slots não têm link nenhum — o dispositivo não aparece no barramento (nem como “unknown”). É o único cenário que explica “nada de NVIDIA no <code>lspci</code>”.</p>
+      <div class="fix"><b>Fix</b><span>Mover a P40 para um slot da CPU 1, ou instalar a 2ª CPU (Gold 6138T do plano).</span></div>
+    </div>
+
+    <div class="card warn">
+      <div class="sev"><span class="rank">2</span> Alto</div>
+      <h3>Alimentação auxiliar não conectada</h3>
+      <p>A P40 puxa 250 W por um conector <b>8-pin tipo CPU/EPS</b> (não é PCIe 6+2 comum). Sem os 8 pinos firmes, a placa nem inicializa e some do barramento.</p>
+      <div class="fix"><b>Fix</b><span>Conferir o cabo de força da GPU encaixado até o clique, com pinagem correta.</span></div>
+    </div>
+
+    <div class="card warn">
+      <div class="sev"><span class="rank">3</span> Médio</div>
+      <h3>Placa ou riser mal encaixados</h3>
+      <p>Card não assentado até o fim do slot, ou trava do riser aberta. Comum depois de transporte.</p>
+      <div class="fix"><b>Fix</b><span>Reencaixar a P40 firme até a trava do slot fechar.</span></div>
+    </div>
+
+    <div class="card low">
+      <div class="sev"><span class="rank">4</span> Baixo · improvável aqui</div>
+      <h3>BIOS: Above 4G Decoding desligado</h3>
+      <p>A P40 tem BAR de 24 GB e precisa de <b>Above 4G Decoding / MMIO High</b> ativo. Mas normalmente a placa <i>ainda apareceria</i> no <code>lspci</code> — como não aparece nada, isto é secundário. Habilitar mesmo assim.</p>
+      <div class="fix"><b>Fix</b><span>BIOS → Above 4G Decoding = Enabled (e Re-Size BAR, se houver).</span></div>
+    </div>
+  </div>
+
+  <p class="sec-label">O que a foto confirma · como verificar</p>
+  <div class="split">
+    <div class="panel">
+      <h3>Fatos do chassi (fotos)</h3>
+      <dl class="facts">
+        <dt>Placa</dt><dd>Intel dual-socket LGA3647 (S2600WF)</dd>
+        <dt>CPU 1</dt><dd class="good">Xeon Silver 4215R — instalada</dd>
+        <dt>CPU 2 (U2)</dt><dd class="bad">socket vazio — confirmado</dd>
+        <dt>GPU</dt><dd>NVIDIA Tesla P40 24 GB (passiva)</dd>
+        <dt>Montagem</dt><dd>lateral esquerda do chassi</dd>
+        <dt>RAM</dt><dd>32 GB (2 DIMMs na CPU 1)</dd>
+        <dt>Resfr.</dt><dd>passivo — depende do fluxo de ar do chassi</dd>
+      </dl>
+    </div>
+    <div class="panel">
+      <h3>Verificar no host Proxmox</h3>
+      <pre class="cmd"><code><span class="c"># a GPU está no barramento?</span>
+lspci | grep -i nvidia
+
+<span class="c"># o slot tem link e a que CPU/NUMA pertence?</span>
+lspci -vvv -s &lt;slot&gt; | grep -i LnkSta
+lspci -nn | grep -i pci
+
+<span class="c"># kernel viu algo?</span>
+dmesg | grep -iE 'nvidia|pcieport'
+
+<span class="c"># depois de mover p/ slot da CPU 1:</span>
+<span class="g">nvidia-smi</span></code></pre>
+    </div>
+  </div>
+
+  <footer>
+    <span>Terra · Proxmox VE · reconstruído a partir de 2 fotos do chassi</span>
+    <span>Diagnóstico preliminar — confirmar mapa slot→CPU no manual da placa</span>
+  </footer>
+</div>
+</body>
+</html>
